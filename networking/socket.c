@@ -4,7 +4,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <stdio.h>
+#include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -23,21 +23,18 @@ void sockaddr_in_helper(char ip[], uint16_t port, struct sockaddr_in *servaddr) 
 
 }
 
-void socket_worker(struct sockaddr_in *servaddr, int sockfd, int *length) {
+void *socket_worker(void *vargp) {
 
-    int netsockfd = accept(sockfd, (struct sockaddr *) servaddr, (socklen_t *) length);
-    if (netsockfd == -1) {
-
-        perror("Error accepting connection");
-        exit(EXIT_FAILURE);
-
-    }
-
-    char buffer[MAX_TCP_BUFFER];
-    read(netsockfd, buffer, MAX_TCP_BUFFER);
-    send(netsockfd, "Test string", strlen("Test string"), 0);
+    int netsockfd = (int) vargp;
+    char buffer[4096];
+    recv(netsockfd, buffer, 4096, 0);
+    printf("%s\n", buffer);
+    send(netsockfd, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"), 0);
+    send(netsockfd, "Content-Type: text/plain\r\n", strlen("Content-Type: text/plain\r\n"), 0);
+    send(netsockfd, "\r\n", strlen("\r\n"), 0);
+    send(netsockfd, "WEBSERVER!!!!", strlen("WEBSERVER!!!!"), 0);
     close(netsockfd);
-    socket_worker(servaddr, sockfd, length);
+    return NULL;
 
 }
 
@@ -74,6 +71,20 @@ void socket_helper(struct sockaddr_in *servaddr) {
 
     }
 
-    socket_worker(servaddr, sockfd, &length);
+    while (1) {
+
+        int netsockfd = accept(sockfd, (struct sockaddr *) servaddr, (socklen_t *) &length);
+        if (netsockfd == -1) {
+
+            perror("Error accepting connection");
+            exit(EXIT_FAILURE);
+
+        }
+
+        pthread_t thread_id;
+        pthread_create(&thread_id, NULL, socket_worker, (void *) netsockfd);
+        pthread_detach(thread_id);
+
+    }
 
 }
