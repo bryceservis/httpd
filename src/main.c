@@ -6,7 +6,7 @@
 
 int main(int argc, char *argv[]) {
 
-    char address[] = "0.0.0.0";
+    char address[16] = "0.0.0.0";
     uint16_t port = 8080;
     for (int i = 1; i < argc; i++) {
 
@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
             }
 
-            strcpy(address, argv[i + 1]);
+            strncpy(address, argv[i + 1], 16);
 
         } else if (strcmp(argv[i], "-p") == 0) {
 
