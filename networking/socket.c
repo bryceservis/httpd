@@ -14,7 +14,7 @@ void sockaddr_in_helper(char ip[], uint16_t port, struct sockaddr_in *servaddr) 
     servaddr->sin_family = AF_INET;
     if (inet_aton(ip, &servaddr->sin_addr) == 0) {
 
-        printf("Malformed IP address\n");
+        printf("The address you have provided is incorrect.\n");
         exit(EXIT_FAILURE);
 
     }
@@ -34,7 +34,7 @@ void socket_worker(struct sockaddr_in *servaddr, int sockfd, int *length) {
     }
 
     char buffer[MAX_TCP_BUFFER];
-    read(netsockfd, buffer, MAX_TCP_BUFFER - 1);
+    read(netsockfd, buffer, MAX_TCP_BUFFER);
     send(netsockfd, "Test string", strlen("Test string"), 0);
     close(netsockfd);
     socket_worker(servaddr, sockfd, length);
