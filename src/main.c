@@ -1,11 +1,8 @@
-//
-// Created by saethroua on 1/29/25.
-//
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <limits.h>
-#include "networking/socket.h"
+#include "tcp/socket.h"
 
 int main(int argc, char *argv[]) {
 

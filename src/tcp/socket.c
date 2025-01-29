@@ -23,17 +23,14 @@ void sockaddr_in_helper(char ip[], uint16_t port, struct sockaddr_in *servaddr) 
 
 }
 
-void *socket_worker(void *vargp) {
+void *socket_worker(void *vargs) {
 
-    int netsockfd = (int) vargp;
+    int sockfd = (int) vargs;
     char buffer[4096];
-    recv(netsockfd, buffer, 4096, 0);
+    recv(sockfd, buffer, 4096, 0);
     printf("%s\n", buffer);
-    send(netsockfd, "HTTP/1.1 200 OK\r\n", strlen("HTTP/1.1 200 OK\r\n"), 0);
-    send(netsockfd, "Content-Type: text/plain\r\n", strlen("Content-Type: text/plain\r\n"), 0);
-    send(netsockfd, "\r\n", strlen("\r\n"), 0);
-    send(netsockfd, "WEBSERVER!!!!", strlen("WEBSERVER!!!!"), 0);
-    close(netsockfd);
+
+    close(sockfd);
     return NULL;
 
 }
@@ -73,8 +70,8 @@ void socket_helper(struct sockaddr_in *servaddr) {
 
     while (1) {
 
-        int netsockfd = accept(sockfd, (struct sockaddr *) servaddr, (socklen_t *) &length);
-        if (netsockfd == -1) {
+        int streamfd = accept(sockfd, (struct sockaddr *) servaddr, (socklen_t *) &length);
+        if (streamfd == -1) {
 
             perror("Error accepting connection");
             exit(EXIT_FAILURE);
@@ -82,7 +79,7 @@ void socket_helper(struct sockaddr_in *servaddr) {
         }
 
         pthread_t thread_id;
-        pthread_create(&thread_id, NULL, socket_worker, (void *) netsockfd);
+        pthread_create(&thread_id, NULL, socket_worker, (void *) streamfd);
         pthread_detach(thread_id);
 
     }
