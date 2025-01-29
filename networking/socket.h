@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define MAX_TCP_BUFFER 1024
 #ifndef SOCKET_H
 #define SOCKET_H
 

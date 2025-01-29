@@ -6,7 +6,7 @@
 void main() {
 
     struct sockaddr_in servaddr;
-    sockaddr_in_helper("127.0.0.1", 8080, &servaddr);
+    sockaddr_in_helper("0.0.0.0", 8080, &servaddr);
     socket_helper(&servaddr);
 
 }
