@@ -26,8 +26,8 @@ void sockaddr_in_helper(char ip[], uint16_t port, struct sockaddr_in *servaddr) 
 void *socket_worker(void *vargs) {
 
     int sockfd = (int) vargs;
-    char buffer[4096];
-    recv(sockfd, buffer, 4096, 0);
+    char buffer[MAX_BUFFER];
+    recv(sockfd, buffer, MAX_BUFFER, 0);
     printf("%s\n", buffer);
 
     close(sockfd);

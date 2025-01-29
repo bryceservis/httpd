@@ -1,12 +1,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <limits.h>
 #include "tcp/socket.h"
 
 int main(int argc, char *argv[]) {
 
     char address[16] = "0.0.0.0";
+    char *root = ".";
     uint16_t port = 8080;
     for (int i = 1; i < argc; i++) {
 
@@ -47,6 +49,12 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
 
             }
+
+            size_t length = sizeof(char) * strlen(argv[i + 1]);
+            void *tmproot = malloc(length);
+            root = (char *) tmproot;
+            free(tmproot);
+            strcpy(root, argv[i + 1]);
 
         } else if (strcmp(argv[i], "-h") == 0) {
 
