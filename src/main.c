@@ -1,75 +1,40 @@
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <limits.h>
-#include "tcp/socket.h"
+/*
+
+    Hypertext Transfer Protocol Daemon
+
+*/
+
+#include <unistd.h>
+#include <stdio.h>
 
 int main(int argc, char *argv[]) {
 
-    char address[16] = "0.0.0.0";
-    char *root = ".";
-    uint16_t port = 8080;
-    for (int i = 1; i < argc; i++) {
+    char *file_c = NULL;
+    int option;
 
-        if (strcmp(argv[i], "-a") == 0) {
+    while ((option = getopt(argc, argv, "hc:")) != -1) {
 
-            if (argc <= i + 1) {
+        switch (option) {
 
-                printf("There must be an argument for the address parameter.\n");
-                exit(EXIT_FAILURE);
+            case 'h':
+                printf("help");
+                return 0;
 
-            }
+            case 'c':
+                file_c = optarg;
+                break;
 
-            strncpy(address, argv[i + 1], 16);
-
-        } else if (strcmp(argv[i], "-p") == 0) {
-
-            if (argc <= i + 1) {
-
-                printf("There must be an argument for the port parameter.\n");
-                exit(EXIT_FAILURE);
-
-            }
-
-            port = (uint16_t) strtol(argv[i + 1], NULL, 10);
-
-            if (port <= 0) {
-
-                printf("The port you have provided cannot be equal to or below zero.\n");
-                exit(EXIT_FAILURE);
-
-            }
-
-        } else if (strcmp(argv[i], "-r") == 0) {
-
-            if (argc <= i + 1) {
-
-                printf("There must be an argument for the webroot parameter.\n");
-                exit(EXIT_FAILURE);
-
-            }
-
-            size_t length = sizeof(char) * strlen(argv[i + 1]);
-            void *tmproot = malloc(length);
-            root = (char *) tmproot;
-            free(tmproot);
-            strcpy(root, argv[i + 1]);
-
-        } else if (strcmp(argv[i], "-h") == 0) {
-
-            printf("-a  Sets the address to listen on\n");
-            printf("-p  Sets the port to listen on\n");
-            printf("-r  Sets the receive webroot\n");
-            exit(EXIT_SUCCESS);
+            default:
+                break;
 
         }
 
     }
 
-    struct sockaddr_in servaddr;
-    sockaddr_in_helper(address, port, &servaddr);
-    socket_helper(&servaddr);
-    return 0;
+    if (!file_c) {
+
+        printf("You must set a configuration file.\n");
+
+    }
 
 }

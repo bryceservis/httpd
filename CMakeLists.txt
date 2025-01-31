@@ -5,4 +5,6 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(httpd src/main.c
         src/tcp/socket.c
-        src/tcp/socket.h)
+        include/socket.h
+        src/http/http.c
+        include/http.h)
