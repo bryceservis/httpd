@@ -41,5 +41,11 @@ int main(int argc, char *argv[]) {
     }
 
     host_t *config = parse_host(file_c);
+    if (!config) {
+
+        printf("Failed to parse configuration file.\n");
+        exit(EXIT_FAILURE);
+
+    }
 
 }
