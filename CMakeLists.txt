@@ -4,7 +4,10 @@ project(httpd C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(httpd src/main.c
-        src/tcp/socket.c
-        include/socket.h
-        src/http/http.c
-        include/http.h)
+        src/config.c
+        src/error.c
+        include/schema/host.h
+        include/schema/http.h
+        include/schema/https.h
+        include/config.h
+        include/error.h)

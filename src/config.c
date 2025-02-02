@@ -53,9 +53,3 @@ host_t *load_hosts(char path[]) {
     return NULL;
 
 };
-
-void main() {
-
-  load_hosts("../conf");
-
-}
