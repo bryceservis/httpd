@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-void log_error(char *call, char *parameter) {
+void error(char *call, char *parameter) {
 
     size_t size = strlen(call) + strlen(parameter) + 1;
     char *error = (char *) malloc(size);

@@ -7,7 +7,6 @@ add_executable(httpd src/main.c
         src/config.c
         src/error.c
         include/schema/host.h
-        include/schema/http.h
-        include/schema/https.h
         include/config.h
-        include/error.h)
+        include/error.h
+)
