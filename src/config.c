@@ -6,17 +6,14 @@
 
 */
 
+#include "../include/schema/host.h"
+#include "../include/config.h"
+#include "../include/error.h"
 #include <dirent.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <errno.h>
-#include "../include/error.h"
-#include "../include/config.h"
-
 #include <ctype.h>
-
-#include "../include/schema/host.h"
 
 typedef enum {
 
@@ -63,16 +60,72 @@ void clean(char *str) {
 
 }
 
+void validate(host_t *host) {
+
+    if (!host->addresses) {
+
+        printf("You must specify at least one address in your host file.\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+    if (!host->name) {
+
+        printf("You must specify a name in your host file.\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+    if (!host->root) {
+
+        printf("You must specify a root in your host file.\n");
+        exit(EXIT_FAILURE);
+
+    }
+
+    if (host->https) {
+
+        if (!host->https->port) {
+
+            printf("You must specify a HTTPS port in your host file.\n");
+            exit(EXIT_FAILURE);
+
+        }
+
+        if (!host->https->certificate) {
+
+            printf("You must specify a HTTPS certificate in your host file.\n");
+            exit(EXIT_FAILURE);
+
+        }
+
+        if (!host->https->private_key) {
+
+            printf("You must specify a HTTPS private key in your host file.\n");
+            exit(EXIT_FAILURE);
+
+        }
+
+    }
+
+    if (host->http) {
+
+        if (!host->http->port) {
+
+            printf("You must specify a HTTP port in your host file.\n");
+            exit(EXIT_FAILURE);
+
+        }
+
+    }
+
+}
+
 host_t *parse_host(char *path) {
 
     host_t *host = NULL;
     FILE *host_file = fopen(path, "r");
-    if (!host_file) {
-
-        error("fopen", path);
-
-    }
-
+    if (!host_file) error("fopen", path);
     char *line = NULL;
     size_t length = 0;
     while (getline(&line, &length, host_file) != -1) {
@@ -99,12 +152,7 @@ host_t *parse_host(char *path) {
 
                 case ADDRESSES:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
                     char *addresses = strdup(segment);
@@ -113,12 +161,7 @@ host_t *parse_host(char *path) {
 
                 case NAME:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
                     char *name = strdup(segment);
@@ -127,12 +170,7 @@ host_t *parse_host(char *path) {
 
                 case ROOT:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
                     char *root = strdup(segment);
@@ -141,78 +179,38 @@ host_t *parse_host(char *path) {
 
                 case HTTPS_PORT:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
-                    if (!host->https) {
-
-                        host->https = (https_t *) malloc(sizeof(https_t));
-
-                    }
-
+                    if (!host->https) host->https = (https_t *) malloc(sizeof(https_t));
                     host->https->port = strtol(segment, NULL, 10);
                     break;
 
                 case HTTP_PORT:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
-                    if (!host->http) {
-
-                        host->http = (http_t *) malloc(sizeof(http_t));
-
-                    }
-
+                    if (!host->http) host->http = (http_t *) malloc(sizeof(http_t));
                     host->http->port = strtol(segment, NULL, 10);
                     break;
 
                 case CERTIFICATE:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
-                    if (!host->https) {
-
-                        host->https = (https_t *) malloc(sizeof(http_t));
-
-                    }
-
+                    if (!host->https) host->https = (https_t *) malloc(sizeof(http_t));
                     char *https_certificate = strdup(segment);
                     host->https->certificate = https_certificate;
                     break;
 
                 case PRIVATE_KEY:
 
-                    if (!host) {
-
-                        break;
-
-                    }
-
+                    if (!host) break;
                     segment = strtok(NULL, "=");
                     clean(segment);
-                    if (!host->https) {
-
-                        host->https = (https_t *) malloc(sizeof(http_t));
-
-                    }
-
+                    if (!host->https) host->https = (https_t *) malloc(sizeof(http_t));
                     char *https_private_key = strdup(segment);
                     host->https->private_key = https_private_key;
                     break;
@@ -229,6 +227,7 @@ host_t *parse_host(char *path) {
 
     }
 
+    validate(host);
     return host;
 
 }

@@ -42,12 +42,4 @@ int main(int argc, char *argv[]) {
 
     host_t *config = parse_host(file_c);
 
-    printf("addresses %s\n", config->addresses);
-    printf("name %s\n", config->name);
-    printf("root %s\n", config->root);
-    printf("https port %d\n", config->https->port);
-    printf("https cert %s\n", config->https->certificate);
-    printf("https priv %s\n", config->https->private_key);
-    printf("http port %d\n", config->http->port);
-
 }
