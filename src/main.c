@@ -4,10 +4,12 @@
 
 */
 
+#include "../include/socket.h"
 #include "../include/config.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <netinet/in.h>
 
 int main(int argc, char *argv[]) {
 
@@ -47,5 +49,14 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
 
     }
+
+    SSL_CTX *context = NULL;
+    struct sockaddr_in *server;
+    create_ssl_context(config->https->certificate, config->https->private_key, &context);
+    create_sockaddr_in(strtok(config->addresses, ","), 4433, server);
+    int sock = create_socket_ipv4(server);
+    ssl_socket_listen(sock, context);
+    close(sock);
+    SSL_CTX_free(context);
 
 }

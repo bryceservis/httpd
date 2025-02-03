@@ -23,3 +23,9 @@ void error(char *call, char *parameter) {
     }
 
 }
+
+void serror(char *call) {
+
+    perror(call);
+
+}

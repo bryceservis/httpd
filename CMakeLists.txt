@@ -9,4 +9,9 @@ add_executable(httpd src/main.c
         include/schema/host.h
         include/config.h
         include/error.h
+        src/socket.c
+        include/socket.h
 )
+
+find_package(OpenSSL REQUIRED)
+target_link_libraries(httpd OpenSSL::SSL)
