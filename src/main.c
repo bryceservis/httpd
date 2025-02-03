@@ -50,8 +50,8 @@ int main(int argc, char *argv[]) {
 
     }
 
-    SSL_CTX *context = NULL;
-    struct sockaddr_in *server;
+    SSL_CTX *context = (SSL_CTX *) malloc(sizeof(SSL_CTX*));
+    struct sockaddr_in *server = (struct sockaddr_in*) malloc(sizeof(struct sockaddr_in));
     create_ssl_context(config->https->certificate, config->https->private_key, &context);
     create_sockaddr_in(strtok(config->addresses, ","), 4433, server);
     int sock = create_socket_ipv4(server);
