@@ -84,18 +84,18 @@ host_t *create_host(char *config_file_path) {
                 break;
 
             case ROOT:
-                if (!host) break;
+                if (!host || host->root) break;
                 host->root = strdup(value_string);
                 break;
 
             case INDEX:
-                if (!host) break;
+                if (!host || host->index) break;
                 host->index = strdup(value_string);
                 break;
 
             case SOCKET:
                 if (!host) break;
-                if (!host->sockets) {
+                if (!host->sockets || !current_socket_list) {
 
                     host->sockets = (struct socket_list *) malloc(sizeof(host_t));
                     host->sockets->socket = (socket_t *) malloc(sizeof(socket_t));
@@ -110,49 +110,50 @@ host_t *create_host(char *config_file_path) {
                 break;
 
             case SOCKET_ADDRESS:
-                if (!current_socket_list || !current_socket_list->socket) break;
+                if (!current_socket_list || !current_socket_list->socket || current_socket_list->socket->address) break;
                 current_socket_list->socket->address = strdup(value_string);
                 break;
 
             case SOCKET_PORT:
-                if (!current_socket_list || !current_socket_list->socket) break;
+                if (!current_socket_list || !current_socket_list->socket || current_socket_list->socket->port) break;
                 current_socket_list->socket->port = strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_KEEP_ALIVE_DURATION:
-                if (!current_socket_list || !current_socket_list->socket) break;
+                if (!current_socket_list || !current_socket_list->socket || current_socket_list->socket->keep_alive_duration) break;
                 current_socket_list->socket->keep_alive_duration = strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS:
-                if (!current_socket_list || !current_socket_list->socket) break;
+                if (!current_socket_list || !current_socket_list->socket || current_socket_list->socket->tls_conf || strcmp(value_string, "off\n\0") == 0) break;
                 current_socket_list->socket->tls_conf = (tls_conf_t *) malloc(sizeof(tls_conf_t));
                 break;
 
             case SOCKET_TLS_MINIMUM_VERSION:
-                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf) break;
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->minimum_version) break;
                 current_socket_list->socket->tls_conf->minimum_version = (int) strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS_MAXIMUM_VERSION:
-                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf) break;
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->maximum_version) break;
                 current_socket_list->socket->tls_conf->maximum_version = (int) strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS_CACHE:
-                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf) break;
+                printf("%s", value_string);
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->tls_cache || strcmp(value_string, "off\n\0") == 0) break;
                 current_socket_list->socket->tls_conf->tls_cache = (tls_cache_t *) malloc(sizeof(tls_cache_t));
                 char cache_id[] = "microhttpd";
                 current_socket_list->socket->tls_conf->tls_cache->cache_id = cache_id;
                 break;
 
             case SOCKET_TLS_CACHE_DURATION:
-                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || !current_socket_list->socket->tls_conf->tls_cache->cache_size) break;
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || !current_socket_list->socket->tls_conf->tls_cache || current_socket_list->socket->tls_conf->tls_cache->cache_duration) break;
                 current_socket_list->socket->tls_conf->tls_cache->cache_duration = strtol(value_string, NULL, 10);
                 break;
 
             case NAME:
-                if (!host) break;
+                if (!host || host->name) break;
                 host->name = strdup(value_string);
                 break;
 

@@ -38,6 +38,10 @@ int main(int argc, char *argv[]) {
     }
 
     host_t *host = create_host(config_file_path);
+    printf(host->sockets->socket->address);
+    printf(host->sockets->next->socket->address);
+    printf(host->sockets->next->next->socket->address);
+    printf(host->sockets->socket->tls_conf->tls_cache->cache_id);
     //TODO: MEMORY CLEANUP FOR HOST STRUCTURE.
     return 0;
 
