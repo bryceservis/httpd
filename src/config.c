@@ -2,26 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../include/config.h"
+#include "../include/error.h"
 #include "../include/schema/host.h"
-
-char *remove_spaces(char *source) {
-
-    int j = 0;
-    for (int i = 0; source[i] != '\0'; i++) {
-
-        if (source[i] != ' ') {
-
-            source[j] = source[i];
-            j++;
-
-        }
-
-    }
-
-    source[j] = '\0';
-    return source;
-
-}
 
 config_types_t match_type(char *type) {
 
@@ -42,17 +24,42 @@ config_types_t match_type(char *type) {
 
 }
 
-void create_host(FILE *config_file) {
+void sanitize(char *string) {
 
-    size_t length = 0;
-    int line_number = 0;
-    char *config_line = NULL;
+    int j = 0;
+    for (int i = 0; string[i] != '\0'; i++) {
+
+        if (string[i] != ' ') {
+
+            string[j] = string[i];
+            j++;
+
+        }
+
+    }
+
+    string[j] = '\0';
+
+}
+
+host_t *create_host(char *config_file_path) {
+
+    FILE *config_file = fopen(config_file_path, "r");
+    if (!config_file) {
+
+        error("Error opening configuration file");
+
+    }
+
+    char *line = NULL;
     host_t *host = NULL;
-    int socket_counter = 0;
-    while (getline(&config_line, &length, config_file) != -1) {
+    size_t line_length = 0;
+    unsigned int line_number = 0;
+    socket_list_t *newest_socket_list = NULL;
+    while (getline(&line, &line_length, config_file) != -1) {
 
         line_number++;
-        char *type_string = strtok(config_line, "=");
+        char *type_string = strtok(line, "=");
         char *value_string = strtok(NULL, "=");
         if (!type_string || !value_string) {
 
@@ -60,14 +67,9 @@ void create_host(FILE *config_file) {
 
         }
 
-        if (type_string[0] == '\0' || value_string[0] == '\0') {
-
-            continue;
-
-        }
-
-        socket_list_t *socket_list = NULL;
-        config_types_t type = match_type(remove_spaces(type_string));
+        sanitize(type_string);
+        sanitize(value_string);
+        config_types_t type = match_type(type_string);
         switch (type) {
 
             case HOST:
@@ -75,135 +77,72 @@ void create_host(FILE *config_file) {
                 break;
 
             case ROOT:
+                if (!host) break;
                 host->root = strdup(value_string);
                 break;
 
             case INDEX:
+                if (!host) break;
                 host->index = strdup(value_string);
                 break;
 
             case SOCKET:
-                socket_list = host->sockets;
-                if (!socket_list) {
+                if (!host) break;
+                if (!host->sockets || !newest_socket_list) {
 
-                    host->sockets = (socket_list_t *) malloc(sizeof(socket_list_t));
+                    host->sockets = (struct socket_list *) malloc(sizeof(host_t));
                     host->sockets->socket = (socket_t *) malloc(sizeof(socket_t));
-                    host->sockets->next = NULL;
+                    newest_socket_list = host->sockets;
                     break;
 
                 }
 
-                while (socket_list->next != NULL) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->next = (socket_list_t *) malloc(sizeof(socket_list_t));
-                socket_list->next->socket = (socket_t *) malloc(sizeof(socket_t));
-                socket_list->next->next = NULL;
-                socket_counter++;
-                break;
-
-            case SOCKET_KEEP_ALIVE_DURATION:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->keep_alive_duration = strtol(value_string, NULL, 10);
+                newest_socket_list->next = (socket_list_t *) malloc(sizeof(socket_list_t));
+                newest_socket_list = newest_socket_list->next;
+                newest_socket_list->socket = (socket_t *) malloc(sizeof(socket_t));
                 break;
 
             case SOCKET_ADDRESS:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->address = remove_spaces(value_string);
+                if (!newest_socket_list || !newest_socket_list->socket) break;
+                newest_socket_list->socket->address = strdup(value_string);
                 break;
 
             case SOCKET_PORT:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
+                if (!newest_socket_list || !newest_socket_list->socket) break;
+                newest_socket_list->socket->port = strtol(value_string, NULL, 10);
+                break;
 
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->port = strtol(value_string, NULL, 10);
+            case SOCKET_KEEP_ALIVE_DURATION:
+                if (!newest_socket_list || !newest_socket_list->socket) break;
+                newest_socket_list->socket->keep_alive_duration = strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf = (tls_conf_t *) malloc(sizeof(tls_conf_t));
+                if (!newest_socket_list || !newest_socket_list->socket) break;
+                newest_socket_list->socket->tls_conf = (tls_conf_t *) malloc(sizeof(tls_conf_t));
                 break;
 
             case SOCKET_TLS_MINIMUM_VERSION:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf->minimum_version = (int) strtol(value_string, NULL, 10);
+                if (!newest_socket_list || !newest_socket_list->socket || !newest_socket_list->socket->tls_conf) break;
+                newest_socket_list->socket->tls_conf->minimum_version = (int) strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS_MAXIMUM_VERSION:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf->maximum_version = (int) strtol(value_string, NULL, 10);
+                if (!newest_socket_list || !newest_socket_list->socket || !newest_socket_list->socket->tls_conf) break;
+                newest_socket_list->socket->tls_conf->maximum_version = (int) strtol(value_string, NULL, 10);
                 break;
 
             case SOCKET_TLS_CACHE:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf->tls_cache = (tls_cache_t *) malloc(sizeof(tls_cache_t));
-                socket_list->socket->tls_conf->tls_cache->cache_id = "microhttpd";
-                break;
-
-            case SOCKET_TLS_CACHE_SIZE:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf->tls_cache->cache_size = (int) strtol(value_string, NULL, 10);
+                if (!newest_socket_list || !newest_socket_list->socket || !newest_socket_list->socket->tls_conf) break;
+                newest_socket_list->socket->tls_conf->tls_cache = (tls_cache_t *) malloc(sizeof(tls_conf_t));
+                newest_socket_list->socket->tls_conf->tls_cache->cache_id = "microhttpd";
                 break;
 
             case SOCKET_TLS_CACHE_DURATION:
-                socket_list = host->sockets;
-                for (int i = 0; i < socket_counter; i++) {
-
-                    socket_list = socket_list->next;
-
-                }
-
-                socket_list->socket->tls_conf->tls_cache->cache_duration = (int) strtol(value_string, NULL, 10);
+                if (!newest_socket_list || !newest_socket_list->socket || !newest_socket_list->socket->tls_conf || !newest_socket_list->socket->tls_conf->tls_cache->cache_size) break;
+                newest_socket_list->socket->tls_conf->tls_cache->cache_duration = strtol(value_string, NULL, 10);
                 break;
+
 
             default:
                 break;
@@ -213,10 +152,12 @@ void create_host(FILE *config_file) {
     }
 
     fclose(config_file);
-    if (config_line) {
+    if (line) {
 
-        free(config_line);
+        free(line);
 
     }
+
+    return host;
 
 }

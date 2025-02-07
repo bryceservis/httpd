@@ -7,7 +7,8 @@
 #include "../include/config.h"
 
 int main(void) {
-    FILE *file = fopen("../conf/example.conf", "r");
-    create_host(file);
+
+    host_t *t = create_host("../conf/example.conf");
+    printf("%s", t->sockets->next->socket->address);
     return 0;
 }

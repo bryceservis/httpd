@@ -8,6 +8,7 @@
 #define CONFIG_C_H
 
 #include <stdio.h>
+#include "schema/host.h"
 
 typedef enum {
 
@@ -28,6 +29,6 @@ typedef enum {
 
 } config_types_t;
 
-void create_host(FILE *config_file);
+host_t *create_host(char *config_file_path);
 
 #endif
