@@ -14,6 +14,7 @@ typedef struct {
 
     socket_list_t *sockets;
     char *index;
+    char *name;
     char *root;
 
 } host_t;

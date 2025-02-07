@@ -25,6 +25,7 @@ typedef enum {
     INDEX,
     ROOT,
     HOST,
+    NAME,
     UNKNOWN
 
 } config_types_t;

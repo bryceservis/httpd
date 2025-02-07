@@ -2,13 +2,43 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <openssl/ssl.h>
-#include <pthread.h>
+#include <bits/getopt_core.h>
 #include "../include/sockets.h"
 #include "../include/config.h"
 
-int main(void) {
+int main(int argc, char *argv[]) {
 
-    host_t *t = create_host("../conf/example.conf");
-    printf("%s", t->sockets->next->socket->address);
+    int option;
+    char *config_file_path = NULL;
+    while ((option = getopt(argc, argv, "c:h")) != -1) {
+
+        switch (option) {
+
+            case 'c':
+                config_file_path = optarg;
+                break;
+
+            case 'h':
+                printf("Usage: %s [-c config_file_path]\n", argv[0]);
+                break;
+
+            case '?':
+                printf("Unrecognized option: %c\n", optopt);
+                break;
+
+        }
+
+    }
+
+    if (!config_file_path) {
+
+        printf("Configuration file not specified\n");
+        return 0;
+
+    }
+
+    host_t *host = create_host(config_file_path);
+    //TODO: MEMORY CLEANUP FOR HOST STRUCTURE.
     return 0;
+
 }

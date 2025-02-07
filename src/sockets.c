@@ -1,6 +1,6 @@
 /*
 
-    Sockets
+    Socket Handler
 
 */
 
