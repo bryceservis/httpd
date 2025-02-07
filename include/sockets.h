@@ -11,7 +11,7 @@
 
 typedef struct {
 
-    unsigned int timeout_duration;
+    unsigned int cache_duration;
     size_t cache_size;
     char *cache_id;
 

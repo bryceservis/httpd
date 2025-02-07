@@ -154,7 +154,7 @@ SSL_CTX *create_tls_context(char *certificate_path, char *private_key_path, tls_
         SSL_CTX_set_session_id_context(tls_context, (void *) tls_conf->tls_cache->cache_id, sizeof(tls_conf->tls_cache->cache_id));
         SSL_CTX_set_session_cache_mode(tls_context, SSL_SESS_CACHE_SERVER);
         SSL_CTX_sess_set_cache_size(tls_context, tls_conf->tls_cache->cache_size);
-        SSL_CTX_set_timeout(tls_context, tls_conf->tls_cache->timeout_duration);
+        SSL_CTX_set_timeout(tls_context, tls_conf->tls_cache->cache_duration);
         SSL_CTX_set_verify(tls_context, SSL_VERIFY_NONE, NULL);
 
     }

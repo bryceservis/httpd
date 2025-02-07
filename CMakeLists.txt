@@ -11,6 +11,10 @@ add_executable(microhttpd src/main.c
         include/error.h
         src/http.c
         include/http.h
+        src/config.c
+        include/config.h
+        include/schema/host.h
+        include/schema/socket.h
 )
 
 target_link_libraries(microhttpd OpenSSL::SSL)
