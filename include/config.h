@@ -13,6 +13,7 @@
 typedef enum {
 
     SOCKET,
+    BUFFER_SIZE,
     SOCKET_KEEP_ALIVE_DURATION,
     SOCKET_ADDRESS,
     SOCKET_PORT,
@@ -26,6 +27,8 @@ typedef enum {
     ROOT,
     HOST,
     NAME,
+    SOCKET_TLS_CERTIFICATE,
+    SOCKET_TLS_PRIVATE_KEY,
     UNKNOWN
 
 } config_types_t;

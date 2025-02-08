@@ -83,7 +83,6 @@ int create_socket_ipv4(struct sockaddr_in *servaddr) {
 }
 
 int create_socket_ipv6(struct sockaddr_in6 *servaddr) {
-
     int sockfd;
     if ((sockfd = socket(AF_INET6, SOCK_STREAM, IPPROTO_TCP)) == -1) {
 
@@ -114,7 +113,16 @@ int create_socket_ipv6(struct sockaddr_in6 *servaddr) {
 
 }
 
-SSL_CTX *create_tls_context(char *certificate_path, char *private_key_path, tls_conf_t *tls_conf) {
+int get_tls_version(char *tls_version) {
+
+    if (strcmp(tls_version, "1.0") == 0) return TLS1_VERSION;
+    else if (strcmp(tls_version, "1.1") == 0) return TLS1_1_VERSION;
+    else if (strcmp(tls_version, "1.2") == 0) return TLS1_2_VERSION;
+    else return TLS1_3_VERSION;
+
+}
+
+SSL_CTX *create_tls_context(tls_conf_t *tls_conf) {
 
     const SSL_METHOD *tls_method = TLS_server_method();
     SSL_CTX *tls_context = SSL_CTX_new(tls_method);
@@ -124,26 +132,26 @@ SSL_CTX *create_tls_context(char *certificate_path, char *private_key_path, tls_
 
     }
 
-    if (!SSL_CTX_set_min_proto_version(tls_context, tls_conf->minimum_version)) {
+    if (!SSL_CTX_set_min_proto_version(tls_context, get_tls_version(tls_conf->minimum_version))) {
 
         error("Error setting TLS min version");
 
     }
 
-    if (!SSL_CTX_set_max_proto_version(tls_context, tls_conf->maximum_version)) {
+    if (!SSL_CTX_set_max_proto_version(tls_context, get_tls_version(tls_conf->maximum_version))) {
 
         error("Error setting TLS max version");
 
     }
 
     SSL_CTX_set_options(tls_context, SSL_OP_IGNORE_UNEXPECTED_EOF | SSL_OP_NO_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
-    if (SSL_CTX_use_certificate_chain_file(tls_context, certificate_path) == 0) {
+    if (SSL_CTX_use_certificate_chain_file(tls_context, tls_conf->certificate) == 0) {
 
         error("Error loading certificate file");
 
     }
 
-    if (SSL_CTX_use_PrivateKey_file(tls_context, private_key_path, SSL_FILETYPE_PEM) == 0) {
+    if (SSL_CTX_use_PrivateKey_file(tls_context, tls_conf->private_key, SSL_FILETYPE_PEM) == 0) {
 
         error("Error loading private key file");
 
@@ -179,8 +187,8 @@ void *tls_worker_thread(void *args) {
     tls_worker_thread_args_t *tls_worker_thread_args = (tls_worker_thread_args_t *) args;
     char *request = (char *) malloc(tls_worker_thread_args->buffer_size);
     SSL_read(tls_worker_thread_args->tls_socket, request, (int) tls_worker_thread_args->buffer_size);
-    size_t length;
-    SSL_write(tls_worker_thread_args->tls_socket, serve(request, tls_worker_thread_args->buffer_size), (int) tls_worker_thread_args->buffer_size);
+    char *response = serve(request, tls_worker_thread_args->buffer_size);
+    SSL_write(tls_worker_thread_args->tls_socket, response, (int) strlen(response));
     SSL_shutdown(tls_worker_thread_args->tls_socket);
     SSL_free(tls_worker_thread_args->tls_socket);
     free(tls_worker_thread_args);

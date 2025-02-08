@@ -17,6 +17,7 @@ config_types_t match_type(char *type) {
     else if (strcmp(type, "root") == 0) return ROOT;
     else if (strcmp(type, "index") == 0) return INDEX;
     else if (strcmp(type, "socket") == 0) return SOCKET;
+    else if (strcmp(type, "buffer_size") == 0) return BUFFER_SIZE;
     else if (strcmp(type, "address") == 0) return SOCKET_ADDRESS;
     else if (strcmp(type, "port") == 0) return SOCKET_PORT;
     else if (strcmp(type, "keep_alive_duration") == 0) return SOCKET_KEEP_ALIVE_DURATION;
@@ -26,6 +27,8 @@ config_types_t match_type(char *type) {
     else if (strcmp(type, "tls_cache_duration") == 0) return SOCKET_TLS_CACHE_DURATION;
     else if (strcmp(type, "tls_minimum_version") == 0) return SOCKET_TLS_MINIMUM_VERSION;
     else if (strcmp(type, "tls_maximum_version") == 0) return SOCKET_TLS_MAXIMUM_VERSION;
+    else if (strcmp(type, "tls_certificate") == 0) return SOCKET_TLS_CERTIFICATE;
+    else if (strcmp(type, "tls_private_key") == 0) return SOCKET_TLS_PRIVATE_KEY;
     else if (strcmp(type, "name") == 0) return NAME;
     else return UNKNOWN;
 
@@ -93,6 +96,11 @@ host_t *create_host(char *config_file_path) {
                 host->index = strdup(value_string);
                 break;
 
+            case BUFFER_SIZE:
+                if (!host || host->buffer_size) break;
+                host->buffer_size = strtol(value_string, NULL, 10);
+                break;
+
             case SOCKET:
                 if (!host) break;
                 if (!host->sockets || !current_socket_list) {
@@ -112,6 +120,7 @@ host_t *create_host(char *config_file_path) {
             case SOCKET_ADDRESS:
                 if (!current_socket_list || !current_socket_list->socket || current_socket_list->socket->address) break;
                 current_socket_list->socket->address = strdup(value_string);
+                current_socket_list->socket->address[strlen(current_socket_list->socket->address) - 1] = '\0';
                 break;
 
             case SOCKET_PORT:
@@ -131,25 +140,41 @@ host_t *create_host(char *config_file_path) {
 
             case SOCKET_TLS_MINIMUM_VERSION:
                 if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->minimum_version) break;
-                current_socket_list->socket->tls_conf->minimum_version = (int) strtol(value_string, NULL, 10);
+                current_socket_list->socket->tls_conf->minimum_version = strdup(value_string);
                 break;
 
             case SOCKET_TLS_MAXIMUM_VERSION:
                 if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->maximum_version) break;
-                current_socket_list->socket->tls_conf->maximum_version = (int) strtol(value_string, NULL, 10);
+                current_socket_list->socket->tls_conf->maximum_version = strdup(value_string);
                 break;
 
             case SOCKET_TLS_CACHE:
-                printf("%s", value_string);
                 if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->tls_cache || strcmp(value_string, "off\n\0") == 0) break;
                 current_socket_list->socket->tls_conf->tls_cache = (tls_cache_t *) malloc(sizeof(tls_cache_t));
                 char cache_id[] = "microhttpd";
                 current_socket_list->socket->tls_conf->tls_cache->cache_id = cache_id;
                 break;
 
+            case SOCKET_TLS_CACHE_SIZE:
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || !current_socket_list->socket->tls_conf->tls_cache || current_socket_list->socket->tls_conf->tls_cache->cache_size == 0) break;
+                current_socket_list->socket->tls_conf->tls_cache->cache_size = strtol(value_string, NULL, 10);
+                break;
+
             case SOCKET_TLS_CACHE_DURATION:
                 if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || !current_socket_list->socket->tls_conf->tls_cache || current_socket_list->socket->tls_conf->tls_cache->cache_duration) break;
                 current_socket_list->socket->tls_conf->tls_cache->cache_duration = strtol(value_string, NULL, 10);
+                break;
+
+            case SOCKET_TLS_CERTIFICATE:
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->certificate) break;
+                current_socket_list->socket->tls_conf->certificate = strdup(value_string);
+                current_socket_list->socket->tls_conf->certificate[strlen(current_socket_list->socket->tls_conf->certificate) - 1] = '\0';
+                break;
+
+            case SOCKET_TLS_PRIVATE_KEY:
+                if (!current_socket_list || !current_socket_list->socket || !current_socket_list->socket->tls_conf || current_socket_list->socket->tls_conf->private_key) break;
+                current_socket_list->socket->tls_conf->private_key = strdup(value_string);
+                current_socket_list->socket->tls_conf->private_key[strlen(current_socket_list->socket->tls_conf->private_key) - 1] = '\0';
                 break;
 
             case NAME:

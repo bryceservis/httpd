@@ -20,8 +20,10 @@ typedef struct {
 typedef struct {
 
     tls_cache_t *tls_cache;
-    int minimum_version;
-    int maximum_version;
+    char *certificate;
+    char *private_key;
+    char* minimum_version;
+    char* maximum_version;
 
 } tls_conf_t;
 
@@ -47,6 +49,6 @@ int create_socket_ipv4(struct sockaddr_in *servaddr);
 int create_socket_ipv6(struct sockaddr_in6 *servaddr);
 void socket_listen(int sockfd, size_t buffer_size);
 void tls_socket_listen(SSL_CTX *tls_context, int sockfd, size_t buffer_size);
-SSL_CTX *create_tls_context(char *certificate_path, char *private_key_path, tls_conf_t *tls_conf);
+SSL_CTX *create_tls_context(tls_conf_t *tls_conf);
 
 #endif //SOCKETS_H

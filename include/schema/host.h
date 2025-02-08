@@ -13,6 +13,7 @@
 typedef struct {
 
     socket_list_t *sockets;
+    size_t buffer_size;
     char *index;
     char *name;
     char *root;

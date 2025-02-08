@@ -7,6 +7,6 @@
 
 #include <stdlib.h>
 
-void *serve(char *request, size_t buffer_size);
+char *serve(char *request, size_t buffer_size);
 
 #endif //HTTP_H
